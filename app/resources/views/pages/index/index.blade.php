@@ -3,7 +3,7 @@
 <section class="jumbotron text-center bg-light">
     <div class="container">
         <h1 class="font-weight-bold">Create Your SpyLink</h1>
-        <form action="/index/create/spylink" method="post">
+        <form action="/link/create" method="post">
             @csrf
             @if ($errors->any())
             <div class="alert alert-danger">

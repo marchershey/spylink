@@ -39,7 +39,7 @@
     * http://apptools.com/phptools/browser/
     *
  */
-namespace App\Custom;
+namespace App\Http\Controllers;
 
 class Browser
 {

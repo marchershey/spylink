@@ -4,7 +4,13 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class SpyLinkVisit extends Model
+class LinkVisit extends Model
 {
-    //
+    
+
+
+
+    
+
+
 }

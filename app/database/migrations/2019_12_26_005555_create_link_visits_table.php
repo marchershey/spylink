@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateSpyLinkVisitsTable extends Migration
+class CreateLinkVisitsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,7 +13,7 @@ class CreateSpyLinkVisitsTable extends Migration
      */
     public function up()
     {
-        Schema::create('spy_link_visits', function (Blueprint $table) {
+        Schema::create('link_visits', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('lid');
 
@@ -96,6 +96,6 @@ class CreateSpyLinkVisitsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('spy_link_visits');
+        Schema::dropIfExists('link_visits');
     }
 }
