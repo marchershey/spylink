@@ -2,75 +2,53 @@
 
 namespace App\Http\Controllers;
 
-use App\Custom\Browser;
+use App\Http\Controllers\Browser;
 use App\Http\Controllers\Controller;
-use App\SpyLink;
-use App\SpyLinkVisit;
+use App\Link;
+use App\LinkVisit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-class SpyLinkController extends Controller
+class LinkController extends Controller
 {
 
     /**
-     * Display a listing of the resource.
+     * Fetch the specific link with the associated visits and return the statistics view
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index($lid)
     {
-        // return view('pages.dashboard.create.spylink');
-    }
+        $link = Link::where('lid', $lid)->first();
+        $visits = LinkVisit::where('lid', $lid)->get();
 
-    // NEEDS INFO COMMENT
-    public function index_view_link($lid)
-    {
-        $spylink = SpyLink::where('lid', $lid)->first();
-        $visits = SpyLinkVisit::where('lid', $lid)->get();
-        // return $visits->countBy('referrer');
-        if ($spylink) {
-            return view('pages.index.link_info')->with(['link' => $spylink, 'visits' => $visits]);
+        if ($link) {
+            return view('pages.index.link_info')->with(['link' => $link, 'visits' => $visits]);
         } else {
             return view('pages.index.index');
         }
     }
 
     /**
-     * Redirect to the destination
+     * Fetch the link, save the visit, and redirect to the destination
      *
      * @return \Illuminate\Http\Response
      */
     public function redirect($lid)
     {
-        $spylink = SpyLink::where('lid', $lid)->first();
-        if ($spylink) {
+        $link = Link::where('lid', $lid)->first();
+        if ($link) {
             if (self::saveVisit($lid)) {
                 if (self::updateVisitCount($lid)) {
-                    return redirect($spylink->url);
+                    return redirect($link->url);
                 } else {
                     return 'error - could not update visit count';
                 }
             } else {
                 return 'error - could not save visit';
             }
-
         } else {
             return redirect('/');
-        }
-
-    }
-
-    // NEEDS INFO COMMENT
-    public function updateVisitCount($lid)
-    {
-
-        $spylink = SpyLink::where('lid', $lid)->first();
-        $count = $spylink->visits;
-        $spylink->visits = ++$count;
-        if ($spylink->save()) {
-            return true;
-        } else {
-            return false;
         }
 
     }
@@ -78,8 +56,8 @@ class SpyLinkController extends Controller
     public function saveVisit($lid)
     {
 
-        $link = SpyLink::where('lid', $lid)->first();
-        $visit = new SpyLinkVisit();
+        $link = Link::where('lid', $lid)->first();
+        $visit = new LinkVisit();
         $ip = self::getIpAddress();
         $ip_type = self::getIpType($ip);
         $geo = self::geoData($ip);
@@ -101,6 +79,7 @@ class SpyLinkController extends Controller
         $visit->platform = $browser->getPlatform();
         $visit->referrer = $referrer;
         $visit->visited_at = time();
+
         if ($visit->save()) {
             return true;
         } else {
@@ -110,13 +89,23 @@ class SpyLinkController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
      *
-     * @return \Illuminate\Http\Response
+     * Update the link's visit count
+     *
      */
-    public function create()
+
+    public function updateVisitCount($lid)
     {
-        //
+
+        $link = Link::where('lid', $lid)->first();
+        $count = $link->visits;
+        $link->visits = ++$count;
+        if ($link->save()) {
+            return true;
+        } else {
+            return false;
+        }
+
     }
 
     /**
@@ -145,61 +134,16 @@ class SpyLinkController extends Controller
 
             $string = self::generateLinkId();
 
-            $spylink = new SpyLink;
-            $spylink->lid = $string;
-            $spylink->url = self::addHttp($request->input('url'));
-            $spylink->page_title = self::getPageTitle(self::addHttp($request->input('url')));
-            $spylink->created_ip = self::getIpAddress();
-            $spylink->save();
+            $link = new Link;
+            $link->lid = $string;
+            $link->url = self::addHttp($request->input('url'));
+            $link->page_title = self::getPageTitle(self::addHttp($request->input('url')));
+            $link->created_ip = self::getIpAddress();
+            $link->save();
 
             return redirect('/~' . $string . '+');
 
         }
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        //
     }
 
     /**
@@ -218,7 +162,7 @@ class SpyLinkController extends Controller
         $string = self::generateRandomString($length);
 
         // need to update to DB for better performance
-        while (SpyLink::where('lid', $string)->exists()) {
+        while (Link::where('lid', $string)->exists()) {
             $i++;
             if ($i < $maxTries) {
                 $string = self::generateRandomString($length);
@@ -398,6 +342,61 @@ class SpyLinkController extends Controller
             return json_decode($response, true);
         }
 
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function create()
+    {
+        //
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function show($id)
+    {
+        //
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function edit($id)
+    {
+        //
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function update(Request $request, $id)
+    {
+        //
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy($id)
+    {
+        //
     }
 
     // end

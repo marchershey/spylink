@@ -13,23 +13,20 @@
 
 Auth::routes();
 
-/*
- *
- * INDEX
- *
- */
+/* ----------------------------- INDEX -------------------------------- */
 
+// Index Views
 Route::get('/', function () {return redirect('/index');});
 Route::get('/index', function () {return view('pages.index.index');});
-Route::get('/~{lid}+', 'SpyLinkController@index_view_link');
-Route::get('/~{lid}', 'SpyLinkController@redirect');
 
-// --------------------------------------------------------------------------
+// Links
+Route::get('/~{lid}+', 'LinkController@index');
+Route::get('/~{lid}', 'LinkController@redirect');
+
+/* --------------------------- RESOURCES ------------------------------ */
 
 /*
- *
- * RESOURCES
- *
+ * Spylink Store
+ * Location: /index
  */
-
-Route::post('/index/create/spylink', 'SpyLinkController@store'); // Create SpyLink Form
+Route::post('/link/create', 'LinkController@store');
